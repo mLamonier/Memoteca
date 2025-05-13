@@ -1,0 +1,5 @@
+__ usar node package manager para instalar o pacote json-server __
+npm i (ou install) -g json-server
+
+__ npm init -y __
+cria um arquivo "package.json", que é um arquivo de configuração do backend
