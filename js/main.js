@@ -16,6 +16,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('pensamento-conteudo').value = '';
         document.getElementById('pensamento-autoria').value = '';
     })
+
+    const inputBusca = document.getElementById('campo-busca');
+    //evento 'input' é chamado toda vez que houver uma modificação do campo (digitação)
+    inputBusca.addEventListener('input', manipularBusca);
 })
 
 async function manipularSubmissaoFormulario(event) {
@@ -37,3 +41,14 @@ async function manipularSubmissaoFormulario(event) {
         alert('Erro ao salvar pensamento');
     }
 }
+
+async function manipularBusca() {
+    const termoBusca = document.getElementById('campo-busca').value;
+    try {
+        const pensamentosFiltrados = await api.buscarPensamentosPorTermo(termoBusca);
+        ui.renderizarPensamentos(pensamentosFiltrados);
+    } catch (error) {
+        alert('Erro ao realizar busca');
+    }
+}
+

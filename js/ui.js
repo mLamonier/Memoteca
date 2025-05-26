@@ -10,7 +10,8 @@ const ui = {
         document.getElementById('pensamento-autoria').value = pensamento.autoria;
     },
 
-    async renderizarPensamentos() {
+    //o parâmetro desta função deve ser null pois o usuário deve poder ler o conteúdo sem a necessidade de pesquisa dinâmica
+    async renderizarPensamentos(pensamentosFiltrados = null) {
         //estas duas linhas de código a seguir são necessárias para "limpar" a lista
         //para quando houver exclusão de algum pensamento, não haver erros na renderização dos novos pensamentos
         //fazendo assim sempre renderizar uma lista "limpa" e nova
@@ -18,20 +19,30 @@ const ui = {
         listaPensamentos.innerHTML = '';
 
         try {
-            const pensamentos = await api.buscarPensamentos();
-            pensamentos.forEach(ui.adicionarPensamentoNaLista);
+            //quando criamos variável assim, ela será undefined e não null
+            let pensamentosParaRenderizar
+
+            //se existir algum pensamento filtrado faça a busca do que está digitado
+            if(pensamentosFiltrados){
+                pensamentosParaRenderizar = pensamentosFiltrados;
+            //se não existe pensamentos filtrados, faça a busca de todos os pensamentos
+            } else {
+                pensamentosParaRenderizar = await api.buscarPensamentos();
+            }
+
+            pensamentosParaRenderizar.forEach(ui.adicionarPensamentoNaLista);
 
             //verificação para exibir a mensagem quando a lista estiver vazia
             const listaVazia = document.querySelector('.lista-vazia');
-            if(pensamentos.length != 0){
+            if(pensamentosParaRenderizar.length != 0){
                 listaVazia.classList.add('desativada');
             } else{
                 listaVazia.classList.remove('desativada');
-                pensamentos.forEach(ui.adicionarPensamentoNaLista);
+                pensamentosParaRenderizar.forEach(ui.adicionarPensamentoNaLista);
             }
         } catch (error) {
             console.error('Erro ao renderizar pensamentos:', error);
-            alert('Erro ao renderizar pensamento');
+            alert('Erro ao renderizar pensamentos');
         }
     },
 

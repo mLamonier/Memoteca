@@ -86,7 +86,29 @@ const api = {
             console.error('Erro ao excluir pensamento:', error);
             alert('Erro ao excluir pensamento');
         }
-    }    
+    },
+
+    //função de pesquisa
+    async buscarPensamentosPorTermo(termo) {
+        try {
+            //aqui o 'this' seria a mesma coisa que = 'api.buscarPensamentos()'
+            //como estamos dentro do proprio objeto, podemos usar o this
+            const pensamentos = await this.buscarPensamentos();
+            const termoEmMinusculas = termo.toLowerCase();
+    
+            //percorre cada pensamento e aplica um filtro
+            //este filtro compra o conteúdo digita pelo usuário (termo) pelo pensamento que está sendo percorrido
+            //podendo ser o conteudo ou autoria
+            const pensamentosFiltrados = pensamentos.filter(pensamento => {
+                return (pensamento.conteudo.toLowerCase().includes(termoEmMinusculas) ||
+                pensamento.autoria.toLowerCase().includes(termoEmMinusculas));
+            });
+            return pensamentosFiltrados;            
+        } catch (error) {
+            alert('Erro ao filtrar pensamentos');
+            throw error;
+        }
+    }
 }
 
 // exportação da variável api para ser usada em outros arquivos .js
