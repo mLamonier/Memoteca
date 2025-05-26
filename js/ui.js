@@ -2,12 +2,33 @@ import api from './api.js';
 
 // objeto javascript que está armazenando funções
 const ui = {
+
+    async preencherFormulario(pensamentoId){
+        const pensamento = await api.buscarPensamentoPorId(pensamentoId);
+        document.getElementById('pensamento-id').value = pensamento.id;
+        document.getElementById('pensamento-conteudo').value = pensamento.conteudo;
+        document.getElementById('pensamento-autoria').value = pensamento.autoria;
+    },
+
     async renderizarPensamentos() {
+        //estas duas linhas de código a seguir são necessárias para "limpar" a lista
+        //para quando houver exclusão de algum pensamento, não haver erros na renderização dos novos pensamentos
+        //fazendo assim sempre renderizar uma lista "limpa" e nova
         const listaPensamentos = document.getElementById('lista-pensamentos');
+        listaPensamentos.innerHTML = '';
 
         try {
             const pensamentos = await api.buscarPensamentos();
             pensamentos.forEach(ui.adicionarPensamentoNaLista);
+
+            //verificação para exibir a mensagem quando a lista estiver vazia
+            const listaVazia = document.querySelector('.lista-vazia');
+            if(pensamentos.length != 0){
+                listaVazia.classList.add('desativada');
+            } else{
+                listaVazia.classList.remove('desativada');
+                pensamentos.forEach(ui.adicionarPensamentoNaLista);
+            }
         } catch (error) {
             console.error('Erro ao renderizar pensamentos:', error);
             alert('Erro ao renderizar pensamento');
@@ -33,7 +54,38 @@ const ui = {
         pensamentoAutoria.textContent = pensamento.autoria;
         pensamentoAutoria.classList.add('pensamento-autoria');
 
-        li.append(iconeAspas, pensamentoConteudo, pensamentoAutoria);
+        const botaoEditar = document.createElement('button');
+        botaoEditar.classList.add('botao-editar');
+        //atribui um evento de click onde será passada a função preencherFormulario criada acima
+        //é necessário colocar o "ui." antes, porque a função é uma propriedade do objeto 'ui'
+        botaoEditar.onclick = () => ui.preencherFormulario(pensamento.id);
+
+        const iconeEditar = document.createElement('img');
+        iconeEditar.src = 'assets/imagens/icone-editar.png';
+        iconeEditar.alt = 'Editar';
+        botaoEditar.append(iconeEditar);
+
+        const botaoExcluir = document.createElement('button');
+        botaoExcluir.classList.add('botao-excluir');
+        botaoExcluir.onclick = async () => {
+            try {
+                await api.excluirPensamento(pensamento.id);
+                ui.renderizarPensamentos();
+            } catch (error) {
+                alert('Erro ao excluir pensamento');
+            }
+        }
+
+        const iconeExcluir = document.createElement('img');
+        iconeExcluir.src = 'assets/imagens/icone-excluir.png';
+        iconeExcluir.alt = 'Excluir';
+        botaoExcluir.append(iconeExcluir);
+
+        const icones = document.createElement('div');
+        icones.classList.add('icones');
+        icones.append(botaoEditar, botaoExcluir);
+
+        li.append(iconeAspas, pensamentoConteudo, pensamentoAutoria, icones);
 
         listaPensamentos.append(li);
     }

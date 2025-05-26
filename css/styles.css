@@ -282,3 +282,18 @@ span {
   background: #041832;
   margin: 96px 0 48px 0;
 }
+
+.lista-vazia{
+  text-align: center;
+}
+
+.lista-vazia__paragrafo{
+  font-family: "Poppins", sans-serif;
+  color: var(--Azul-Dark);
+  font-size: 22px;
+  padding-bottom: 2em;
+}
+
+.desativada{
+  display: none;
+}

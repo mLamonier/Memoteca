@@ -25,7 +25,13 @@ async function manipularSubmissaoFormulario(event) {
     const autoria = document.getElementById('pensamento-autoria').value;
 
     try{
-        await api.salvarPensamento({conteudo, autoria});
+        if(id) { //se exister um id, faça isso:
+            //aqui já precisa informar o id, pois se estamos editando, significa que json-server já criou ele
+            await api.editarPensamento({id, conteudo, autoria})
+        } else {
+            //aqui não precisamos chamar o id, pois o json-server já cria um novo id automaticamente
+            await api.salvarPensamento({conteudo, autoria});
+        }
         ui.renderizarPensamentos();
     }catch (error){
         alert('Erro ao salvar pensamento');
