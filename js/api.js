@@ -61,6 +61,8 @@ const api = {
             //como queremos editar somente 1 pensamento, devemos passar desta forma:
             const response = await fetch(`${URL_BASE}/pensamentos/${pensamento.id}`, {
                 //método PUT = edita
+                //o método put precisa do pensamento por completo, diferente do método patch
+                //pois ele edita todas as propriedades de uma vez ou cria se não existir
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
@@ -107,6 +109,17 @@ const api = {
         } catch (error) {
             alert('Erro ao filtrar pensamentos');
             throw error;
+        }
+    },
+
+    async atualizarFavorito(id, favorito){
+        try {
+            //o método PATCH faz a edição igual ao PUT, porém só edita 1 propriedade por vez, edição parcial
+            const response = await axios.patch(`${URL_BASE}/pensamentos/${id}`, {favorito});
+            return response.data;
+        } catch (error) {
+            alert("Erro ao atualizar favorito");
+            throw error
         }
     }
 }
