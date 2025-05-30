@@ -1,6 +1,26 @@
 import ui from "./ui.js";
 import api from "./api.js";
 
+//um set é um objeto que armazena qualquer tipo de dado
+//diferente de um array, ele não permite valores duplicados
+//os valores são armazenados na ordem em que são inseridos
+//pode se usar um array com valores para criar um set do zero
+const pensamentosSet = new Set();
+
+async function adicionarChaveAoPensamento() {
+    try {
+        const pensamentos = await api.buscarPensamentos();
+        pensamentos.forEach(pensamento => {
+            // exemplo de saída do código abaixo: chavePensamento = 'hoje é um bom dia-dev cansado'
+            const chavePensamento = `${pensamento.conteudo.trim().toLowerCase()}-${pensamento.autoria.trim().toLowerCase()}`;
+            pensamentosSet.add(chavePensamento);
+        });
+    } catch (error) {
+        alert('Erro ao adicionar chave ao pensamento');
+    }
+}
+
+
 //Expressões Regulares: (REGEX)
 // // (barras) = delimita a expressão, inicio e fim
 // ^ (acento circunflexo) = indica o início da expressão
@@ -38,6 +58,7 @@ function validarAutoria(autoria){
 document.addEventListener('DOMContentLoaded', () => {
     //exibe os pensamentos que estão presentes no db.json no HTML
     ui.renderizarPensamentos();
+    adicionarChaveAoPensamento();
 
     const formularioPensamento = document.getElementById('pensamento-form');
     //insere um evento de submissão de formulário onde quando executado,
@@ -80,6 +101,16 @@ async function manipularSubmissaoFormulario(event) {
     //ou seja, se a data atual NÃO for menor que a data inserida, ela é inválida, pois não é permitido datas futuras 
     if(!validarData(data)){
         alert('Não é permitido o cadastro de datas futuras. Selecione outra data.');
+        return;
+    }
+
+    // exemplo de saída do código abaixo: chaveNovoPensamento = 'hoje é um bom dia-dev cansado'
+    const chaveNovoPensamento = `${conteudo.trim().toLowerCase()}-${autoria.trim().toLowerCase()}`;
+
+    // comando 'has' do Set verifica se já existe o valor dentro do Set, se existir, retorna TRUE
+    // esta verificação impede de o usuário criar 2 pensamentos idênticos
+    if (pensamentosSet.has(chaveNovoPensamento)){
+        alert('Esse pensamento já existe.');
         return;
     }
 
