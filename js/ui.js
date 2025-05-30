@@ -8,6 +8,12 @@ const ui = {
         document.getElementById('pensamento-id').value = pensamento.id;
         document.getElementById('pensamento-conteudo').value = pensamento.conteudo;
         document.getElementById('pensamento-autoria').value = pensamento.autoria;
+        //formato da data no db.json: "2024-05-25T19:20:40.888Z"
+        //usamos a função toISOString para transformar uma objeto date em string padrão UTC e conseguirmos separála pelo "T"
+        //depois pegando o primeiro elemento do array criado pela split que será "2024-05-25"
+        document.getElementById('pensamento-data').value = pensamento.data.toISOString().split('T')[0];
+        //quando clicar no botão editar de algum pensamento, será 'scrollado' automaticamente para a área formulário
+        document.getElementById('form-container').scrollIntoView(); 
     },
 
     //o parâmetro desta função deve ser null pois o usuário deve poder ler o conteúdo sem a necessidade de pesquisa dinâmica
@@ -65,6 +71,25 @@ const ui = {
         pensamentoAutoria.textContent = pensamento.autoria;
         pensamentoAutoria.classList.add('pensamento-autoria');
 
+        const pensamentoData = document.createElement('div');
+
+        var options = {
+            weekday: 'long', //dia da semana por extenso
+            year: 'numeric', //ano por número
+            month: 'long', //mês por extenso
+            day: 'numeric', //dia por número
+            timeZone: 'UTC' //região é UTC, para não haver problemas com fusos horários
+        };
+        const dataFormatada = pensamento.data.toLocaleDateString('pt-BR', options);
+        // () (parenteses) = significa que iremos guardar o valor dentro dele em uma variável
+        // \w = indica o primeiro caractere da string
+        // match = nome dado para representar o resultado da busca da regex, que será a primeira letra
+        // se usa uma arrow function para não ter que escrever muito com uma function normal, colocar return etc
+        // o método replace exige uma string e uma função como parâmetros, nesta ordem, caso não, ele retorna um erro
+        const dataComRegex = dataFormatada.replace(/^(\w)/, (match) => match.toUpperCase()); 
+        pensamentoData.textContent = dataComRegex;
+        pensamentoData.classList.add('pensamento-data');
+
         const botaoEditar = document.createElement('button');
         botaoEditar.classList.add('botao-editar');
         //atribui um evento de click onde será passada a função preencherFormulario criada acima
@@ -94,9 +119,25 @@ const ui = {
 
         const botaoFavorito = document.createElement('button');
         botaoFavorito.classList.add('botao-favorito');
+        botaoFavorito.onclick = async () => {
+            try {
+                //para que a propriedade favorito seja alterada, é necessário colocar um sinal de negação antes (!)
+                //pois como estamos selecionando o pensamento em si, se não colocarmos negação, ele não altera
+                //apenas fica atualizando para o status atual da propriedade favorito
+                //como passamos uma negação, sempre será o oposto do que já está no pensamento
+                await api.atualizarFavorito(pensamento.id, !pensamento.favorito);
+                ui.renderizarPensamentos();
+            } catch (error) {
+                alert('Erro ao atualizar pensamento');
+            }
+        }
 
         const iconeFavorito = document.createElement('img');
-        iconeFavorito.src = 'assets/imagens/icone-favorito_outline.png';
+        iconeFavorito.src = 
+            pensamento.favorito ? //operador ternário, se pensamento.favorito for true, faça, se não...
+                'assets/imagens/icone-favorito.png' :                
+                'assets/imagens/icone-favorito_outline.png';
+
         iconeFavorito.alt = 'Ícone de favorito';
         botaoFavorito.append(iconeFavorito);
 
@@ -104,7 +145,7 @@ const ui = {
         icones.classList.add('icones');
         icones.append(botaoFavorito, botaoEditar, botaoExcluir);
 
-        li.append(iconeAspas, pensamentoConteudo, pensamentoAutoria, icones);
+        li.append(iconeAspas, pensamentoConteudo, pensamentoAutoria, icones, pensamentoData);
 
         listaPensamentos.append(li);
     }

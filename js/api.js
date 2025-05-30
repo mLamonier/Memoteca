@@ -1,20 +1,41 @@
 const URL_BASE = 'http://localhost:3000';
 
+const converterStringParaData = (dataString) => {
+    //formato utc: 2024-08-12
+    //split = quebra as strings transformando em arrays
+    //isso se chama desestruturação
+    const [ano, mes, dia] = dataString.split('-');
+    //aqui se cria uma nova data do tipo UTC que recebe os valores que estavam em string (ano, mês, dia)
+    //deve-se colocar o -1 no mês pois o formato date é de 0 a 11 e não de 1 a 12
+    return new Date(Date.UTC(ano, mes - 1, dia));
+}
+
 // objeto javascript que está armazenando funções
 const api = {
     async buscarPensamentos(){
         try {
+            const response = await axios.get(`${URL_BASE}/pensamentos`);
+            const pensamentos = response.data;
+
+            //map = percorre cada pensamento, para cada um, se cria um novo objeto
+            //usa o operador de espalhamento para copiar todas as propriedades do pensamento original
+            //sobrescreve a propriedade data, convertendo o valor original (string) para um objeto Date do JS
+            return pensamentos.map(pensamento => {
+                return  {
+                    ...pensamento,
+                    data: new Date(pensamento.data)
+                }
+            });
+
+            // se caso não for usar a biblioteca axios:
             // faz o fetch (requisição) ao servidor que criamos, retorna uma promise
             // automaticamente um fetch já é um método GET, por isso não precisa colocar
             // método GET = busca/requisita
-            // se fosse usar o axios seria assim o código:
-            // const response = await axios.get(`${URL_BASE}/pensamentos`);
-            const response = await fetch(`${URL_BASE}/pensamentos`);
+            // const response = await fetch(`${URL_BASE}/pensamentos`);
             // a resposta desta requisição armazenamos em uma variável para transformá-la em um objeto javascript
             // antes: json ->  depois: javascript
-            // se fosse usar o axios seria assim o código:
-            // return await response.data;
-            return await response.json();
+            // return await response.json();
+
         } catch (error) {
             console.error('Erro ao renderizar pensamentos:', error);
             alert('Erro ao renderizar pensamento');
@@ -23,20 +44,34 @@ const api = {
 
     async salvarPensamento(pensamento){
         try {
-            // se fosse usar o axios seria apenas assim o código:
-            // const response = await axios.post(`${URL_BASE}/pensamentos`, pensamento);
-            // return await response.data;
-            const response = await fetch(`${URL_BASE}/pensamentos`, {
-                //método POST = insere/cria
-                method: "POST",
-                // o "assunto" do método, que no caso é do tipo json
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                // como é enviado em formato JSON, precisamos converter para objeto javascript
-                body: JSON.stringify(pensamento)
+            const data = converterStringParaData(pensamento.data);
+            const response = await axios.post(`${URL_BASE}/pensamentos`, {
+                //... = operador de espalhamento
+                //ele "seleciona" todos os dados que já existem naquele pensamento e mantém
+                //só modificará a data neste caso
+                //deixa o código menos verboso
+                ...pensamento,
+                //transforma a data inserida pelo usuário em string
+                data: data.toISOString()
             });
-            return await response.json();
+            return await response.data;
+
+            // se caso não for usar a biblioteca axios:
+            // const response = await fetch(`${URL_BASE}/pensamentos`, {
+            //     //método POST = insere/cria
+            //     method: "POST",
+            //     // o "assunto" do método, que no caso é do tipo json
+            //     headers: {
+            //         "Content-Type": "application/json"
+            //     },
+            //     // como é enviado em formato JSON, precisamos converter para objeto javascript
+            //     body: JSON.stringify({
+            //         ...pensamento,
+            //         data
+            //     })
+            // });
+            // return await response.json();
+            
         } catch (error) {
             console.error('Erro ao salvar pensamento:', error);
             alert('Erro ao salvar pensamento');
@@ -45,8 +80,18 @@ const api = {
 
     async buscarPensamentoPorId(id){
         try {
-            const response = await fetch(`${URL_BASE}/pensamentos/${id}`);
-            return await response.json();
+            const response = await axios.get(`${URL_BASE}/pensamentos/${id}`);
+            const pensamento = await response.data;
+
+            return {
+                ...pensamento,
+                data: new Date(pensamento.data)
+            }
+
+            //se fosse usar o fetch, seria assim:
+            // const response = await fetch(`${URL_BASE}/pensamentos/${id}`);
+            // return await response.json();
+
         } catch (error) {
             console.error('Erro ao buscar pensamento:', error);
             alert('Erro ao buscar pensamento');
